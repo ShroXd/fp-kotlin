@@ -1,6 +1,6 @@
-import fp.factorial
-import fp.fib
+import fp.*
 import org.junit.jupiter.api.Test
+import kotlin.math.abs
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
@@ -18,5 +18,57 @@ class IntroductionTest {
         )
 
         assertEquals(5, fib(5))
+    }
+
+    @Test
+    fun testUtils() {
+        assertEquals(
+            "The absolute value of -42 of 42",
+            Utils.formatAbs(-42)
+        )
+        assertEquals(
+            "The factorial of 7 is 5040",
+            Utils.formatFactorial(7)
+        )
+
+        assertEquals(
+            "The absolute of -42 is 42",
+            Utils.formatResult("absolute", -42, ::abs)
+        )
+
+        assertEquals(
+            "The factorial of 7 is 5040",
+            Utils.formatResult("factorial", 7, ::factorial)
+        )
+
+        assertEquals(
+            "The absolute of -42 is 42",
+            Utils.formatResult("absolute", -42
+            ) { if (it < 0) -it else it }
+        )
+
+        val ss: Array<String> = arrayOf("1", "2", "3")
+        assertEquals(
+            1,
+            findFirst(ss, "2")
+        )
+
+        val xs: Array<Int> = arrayOf(1, 2, 3, 4, 5)
+        assertEquals(
+            2,
+            findFirst(xs) { it == 3 }
+        )
+
+        val aa1: List<Int> = listOf(1, 2, 3)
+        assertEquals(
+            true,
+            isSorted(aa1) { a, b -> a < b }
+        )
+
+        val aa2: List<Int> = listOf(1, 3, 2)
+        assertEquals(
+            false,
+            isSorted(aa2) { a, b -> a < b }
+        )
     }
 }
