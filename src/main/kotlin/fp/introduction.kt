@@ -11,7 +11,7 @@ fun factorial(i: Int): Int {
 fun fib(i: Int): Int {
     tailrec fun go(n: Int, curr: Int, next: Int): Int =
         if (n == 0) curr
-        else go(n - 1, next, curr + next)
+        else go(n - 1, next, next + curr)
 
     return go(i, 0, 1)
 }
