@@ -71,4 +71,18 @@ class IntroductionTest {
             isSorted(aa2) { a, b -> a < b }
         )
     }
+
+    @Test
+    fun testHOC() {
+        val partial = partial1("Spike") { a, b: Int -> "My name is $a, my age is $b"}
+        val curry = curry { a: String, b: Int -> "My name is $a, my age is $b"}
+        val uncurry = uncurry(curry)
+        val compose = compose({ b: Int -> "My age is $b"}) { a: Int -> a * 10 }
+
+        val res = "My name is Spike, my age is 27"
+        assertEquals(res, partial(27))
+        assertEquals(res, curry("Spike")(27))
+        assertEquals(res, uncurry("Spike", 27))
+        assertEquals("My age is 270", compose(27))
+    }
 }
