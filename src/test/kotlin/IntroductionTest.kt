@@ -74,7 +74,7 @@ class IntroductionTest {
 
     @Test
     fun testHOC() {
-        val partial = partial1("Spike") { a, b: Int -> "My name is $a, my age is $b"}
+        val partial = partial("Spike") { a, b: Int -> "My name is $a, my age is $b"}
         val curry = curry { a: String, b: Int -> "My name is $a, my age is $b"}
         val uncurry = uncurry(curry)
         val compose = compose({ b: Int -> "My age is $b"}) { a: Int -> a * 10 }

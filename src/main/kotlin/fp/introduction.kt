@@ -89,7 +89,7 @@ fun <T> isSorted(aa: List<T>, order: (T, T) -> Boolean): Boolean {
     return loop(0)
 }
 
-fun <A, B, C> partial1(a: A, f: (A, B) -> C): (B) -> C =
+fun <A, B, C> partial(a: A, f: (A, B) -> C): (B) -> C =
     { b -> f(a, b) }
 
 fun <A, B, C> curry(f: (A, B) -> C): (A) -> (B) -> C =
