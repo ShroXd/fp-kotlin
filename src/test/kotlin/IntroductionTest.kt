@@ -85,4 +85,20 @@ class IntroductionTest {
         assertEquals(res, uncurry("Spike", 27))
         assertEquals("My age is 270", compose(27))
     }
+
+    @Test
+    fun testMyList() {
+        val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        assertEquals(55, MyList.sum(mlint))
+        assertEquals(120.0, MyList.product(mldouble))
+
+        assertEquals(2, value(mlint, ::tail))
+        assertEquals(100, (setHead(mlint, 100) as Cons).head)
+        assertEquals(5, (drop(mlint, 4) as Cons).head)
+        assertEquals(5, (dropWhile(mlint) { it == 5 } as Cons).head)
+        assertEquals(1, (drop(append(MyList.of(11, 12, 13), mlint), 3) as Cons).head)
+        assertEquals(Nil, (dropWhile(init(mlint)) { it == 9 } as Cons).tail)
+    }
 }

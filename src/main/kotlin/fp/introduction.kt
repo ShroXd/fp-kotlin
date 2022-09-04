@@ -100,3 +100,75 @@ fun <A, B, C> uncurry(f: (A) -> (B) -> C): (A, B) -> C =
 
 fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C =
     { a -> f(g(a)) }
+
+sealed class MyList<out T> {
+    // A companion object is added to the body of its definition
+    // to add some behavior to the MyList type
+    companion object {
+        // vararg - accepts a variable number of arguments
+        fun <T> of(vararg aa: T): MyList<T> {
+            val tail = aa.sliceArray(1 until aa.size)
+            // * - spread operator
+            return if (aa.isEmpty()) Nil else Cons(aa[0], of(*tail))
+        }
+
+        fun sum(ints: MyList<Int>): Int =
+            when (ints) {
+                is Nil -> 0
+                is Cons -> ints.head + sum(ints.tail)
+            }
+
+        fun product(doubles: MyList<Double>): Double =
+            when (doubles) {
+                is Nil -> 1.0
+                is Cons ->
+                    if (doubles.head == 0.0) 0.0
+                    else doubles.head * product(doubles.tail)
+            }
+    }
+}
+object Nil : MyList<Nothing>()
+data class Cons<out T>(val head: T, val tail: MyList<T>): MyList<T>()
+
+fun <T> value(xs: MyList<T>, fn: (MyList<T>) -> MyList<T>): T =
+    (fn(xs) as Cons).head
+
+fun <T> tail(xs: MyList<T>): MyList<T> =
+    when (xs) {
+        is Nil -> Nil
+        is Cons -> xs.tail
+    }
+
+fun <T> setHead(xs: MyList<T>, x: T): MyList<T> =
+    when (xs) {
+        is Nil -> Nil
+        is Cons -> Cons(x, tail(xs))
+    }
+
+fun <T> drop(l: MyList<T>, n: Int): MyList<T> =
+    when {
+        l is Nil -> Nil
+        n == 0 -> l
+        else -> drop(tail(l), n - 1)
+    }
+
+fun <T> dropWhile(l: MyList<T>, f: (T) -> Boolean): MyList<T> =
+    when (l) {
+        is Nil -> Nil
+        is Cons -> if (f(l.head)) l else dropWhile(tail(l), f)
+    }
+
+fun <T> append(a1: MyList<T>, a2: MyList<T>): MyList<T> =
+    when (a1) {
+        is Nil -> a2
+        is Cons -> Cons(a1.head, append(a1.tail, a2))
+    }
+
+fun <T> init(l: MyList<T>): MyList<T> =
+    when (l) {
+        is Cons ->
+            if (l.tail == Nil) Nil
+            else Cons(l.head, init(l.tail))
+        is Nil ->
+            throw IllegalStateException("Cannot init Nil list")
+    }
