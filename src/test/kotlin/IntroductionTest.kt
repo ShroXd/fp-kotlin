@@ -100,5 +100,8 @@ class IntroductionTest {
         assertEquals(5, (dropWhile(mlint) { it == 5 } as Cons).head)
         assertEquals(1, (drop(append(MyList.of(11, 12, 13), mlint), 3) as Cons).head)
         assertEquals(Nil, (dropWhile(init(mlint)) { it == 9 } as Cons).tail)
+
+        assertEquals(55, sum(mlint))
+        assertEquals(120.0, product(mldouble))
     }
 }

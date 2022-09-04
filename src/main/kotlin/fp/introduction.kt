@@ -172,3 +172,13 @@ fun <T> init(l: MyList<T>): MyList<T> =
         is Nil ->
             throw IllegalStateException("Cannot init Nil list")
     }
+
+fun <A, B> foldRight(xs: MyList<A>, z: B, f: (A, B) -> B): B =
+    when (xs) {
+        is Nil -> z
+        is Cons -> f(xs.head, foldRight(xs.tail, z, f))
+    }
+fun sum(ints: MyList<Int>): Int =
+    foldRight(ints, 0) { a, b -> a + b }
+fun product(dbs: MyList<Double>): Double =
+    foldRight(dbs, 1.0) { a, b -> a * b }
