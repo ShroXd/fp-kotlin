@@ -87,7 +87,7 @@ class IntroductionTest {
     }
 
     @Test
-    fun testMyList() {
+    fun testMyListWithCons() {
         val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
 
@@ -100,8 +100,65 @@ class IntroductionTest {
         assertEquals(5, (dropWhile(mlint) { it == 5 } as Cons).head)
         assertEquals(1, (drop(append(MyList.of(11, 12, 13), mlint), 3) as Cons).head)
         assertEquals(Nil, (dropWhile(init(mlint)) { it == 9 } as Cons).tail)
+    }
+
+    @Test
+    fun testFoldRight() {
+        val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
 
         assertEquals(55, sum(mlint))
         assertEquals(120.0, product(mldouble))
+        assertEquals(10, length(mlint))
+    }
+
+    @Test
+    fun testFoldLeft() {
+        val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        assertEquals(55, sumLeft(mlint))
+        assertEquals(120.0, productLeft(mldouble))
+        assertEquals(10, lengthLeft(mlint))
+        assertEquals(
+            MyList.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+            reverse(mlint)
+        )
+    }
+
+    @Test
+    fun testFoldRightOnLeft() {
+        val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        assertEquals(55, sumLeftOL(mlint))
+        assertEquals(120.0, productLeftOL(mldouble))
+        assertEquals(10, lengthLeftOL(mlint))
+        assertEquals(
+            MyList.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+            reverseOL(mlint)
+        )
+    }
+
+    @Test
+    fun testFoldLeftOnRight() {
+        val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+
+        assertEquals(55, sumLeftOR(mlint))
+        assertEquals(120.0, productLeftOR(mldouble))
+        assertEquals(10, lengthLeftOR(mlint))
+        assertEquals(
+            MyList.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+            reverseOR(mlint)
+        )
+    }
+
+    @Test
+    fun testValidator() {
+        assertEquals(true, validator("1234"))
+        assertEquals(true, validator("0234"))
+        assertEquals(false, validator("234"))
+        assertEquals(false, validator("12345"))
     }
 }

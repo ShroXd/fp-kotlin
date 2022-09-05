@@ -173,12 +173,94 @@ fun <T> init(l: MyList<T>): MyList<T> =
             throw IllegalStateException("Cannot init Nil list")
     }
 
+// f(xs.head, foldRight(xs.tail, z, f))
+// ------------------------------------------------------------------
+// f(xs.head,
+//      f(xs.tail.head, foldRight(xs.tail.tail, z, f))
+// )
+// ------------------------------------------------------------------
+// f(xs.head,
+//      f(xs.tail.head,
+//          f(xs.tail.tail.head, foldRight(xs.tail.tail.tail, z, f))
+// )
+// ------------------------------------------------------------------
+// Suppose xs.tail.tail.tail == Nil
+// f(xs.head,
+//      f(xs.tail.head,
+//          f(xs.tail.tail.head, z)
+// )
 fun <A, B> foldRight(xs: MyList<A>, z: B, f: (A, B) -> B): B =
     when (xs) {
         is Nil -> z
         is Cons -> f(xs.head, foldRight(xs.tail, z, f))
     }
+
 fun sum(ints: MyList<Int>): Int =
     foldRight(ints, 0) { a, b -> a + b }
 fun product(dbs: MyList<Double>): Double =
     foldRight(dbs, 1.0) { a, b -> a * b }
+fun <T> length(xs: MyList<T>): Int =
+    foldRight(xs, 0) { _, b -> 1 + b }
+
+// foldLeft(xs.tail, f(z, xs.head), f)
+// ------------------------------------------------------------------
+// foldLeft(xs.tail.tail, f(f(z, xs.head), xs.tail.head), f)
+// ------------------------------------------------------------------
+// foldLeft(xs.tail.tail.tail, f(f(f(z, xs.head), xs.tail.head), xs.tail.tail.head), f))
+// ------------------------------------------------------------------
+// Suppose xs.tail.tail.tail == Nil
+// f(f(f(z, xs.head), xs.tail.head), xs.tail.tail.head)
+tailrec fun <A, B> foldLeft(xs: MyList<A>, z: B, f: (B, A) -> B): B =
+    when (xs) {
+        is Nil -> z
+        is Cons -> foldLeft(xs.tail, f(z, xs.head), f)
+    }
+fun sumLeft(ints: MyList<Int>): Int =
+    foldLeft(ints, 0) { a, b -> a + b }
+fun productLeft(dbs: MyList<Double>): Double =
+    foldLeft(dbs, 1.0) { a, b -> a * b }
+fun <T> lengthLeft(xs: MyList<T>): Int =
+    foldLeft(xs, 0) { a, _ -> 1 + a }
+fun <T> reverse(xs: MyList<T>): MyList<T> =
+    foldLeft(xs, Nil) { t: MyList<T>, h: T -> Cons(h, t) }
+
+// ------------------------------------------------------------------
+
+fun <A, B> foldRightL(xs: MyList<A>, z: B, f: (A, B) -> B): B =
+    foldLeft(xs, z) { a, b -> f(b, a) }
+
+fun sumLeftOL(ints: MyList<Int>): Int =
+    foldRightL(ints, 0) { a, b -> a + b }
+fun productLeftOL(dbs: MyList<Double>): Double =
+    foldRightL(dbs, 1.0) { a, b -> a * b }
+fun <T> lengthLeftOL(xs: MyList<T>): Int =
+    foldRightL(xs, 0) { _, b -> 1 + b }
+fun <T> reverseOL(xs: MyList<T>): MyList<T> =
+    foldRightL(xs, Nil) { h: T, t: MyList<T> -> Cons(h, t) }
+
+// ------------------------------------------------------------------
+
+fun <A, B> foldLeftR(xs: MyList<A>, z: B, f: (B, A) -> B): B =
+    foldRight(xs, z) { a, b -> f(b, a) }
+
+fun sumLeftOR(ints: MyList<Int>): Int =
+    foldLeftR(ints, 0) { a, b -> a + b }
+fun productLeftOR(dbs: MyList<Double>): Double =
+    foldLeftR(dbs, 1.0) { a, b -> a * b }
+fun <T> lengthLeftOR(xs: MyList<T>): Int =
+    foldLeftR(xs, 0) { a, _ -> 1 + a }
+fun <T> reverseOR(xs: MyList<T>): MyList<T> =
+    foldLeftR(xs, Nil as MyList<T>) { h, t -> Cons(t, h) }
+
+fun validator(s: String): Boolean {
+    if (s.length != 4) return false
+
+    tailrec fun loop(n: Int): Boolean =
+        when {
+            n >= s.length -> true
+            s[n] in '0'..'9' -> loop(n + 1)
+            else -> false
+        }
+
+    return loop(0)
+}
