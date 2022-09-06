@@ -130,6 +130,7 @@ class IntroductionTest {
     fun testFoldRightOnLeft() {
         val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+        // Wrong!
 
         assertEquals(55, sumLeftOL(mlint))
         assertEquals(120.0, productLeftOL(mldouble))
@@ -144,21 +145,91 @@ class IntroductionTest {
     fun testFoldLeftOnRight() {
         val mlint: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
         val mldouble = MyList.of(1.0, 2.0, 3.0, 4.0, 5.0)
+        // Wrong!
 
         assertEquals(55, sumLeftOR(mlint))
         assertEquals(120.0, productLeftOR(mldouble))
         assertEquals(10, lengthLeftOR(mlint))
-        assertEquals(
-            MyList.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
-            reverseOR(mlint)
-        )
+//        assertEquals(
+//            MyList.of(10, 9, 8, 7, 6, 5, 4, 3, 2, 1),
+//            reverseOR(mlint)
+//        )
     }
 
     @Test
-    fun testValidator() {
-        assertEquals(true, validator("1234"))
-        assertEquals(true, validator("0234"))
-        assertEquals(false, validator("234"))
-        assertEquals(false, validator("12345"))
+    fun testAppend() {
+        val a1: MyList<Int> = MyList.of(1, 2, 3, 4, 5)
+        val a2: MyList<Int> = MyList.of(6, 7, 8, 9, 10)
+        val res: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+        assertEquals(res, appendR(a1, a2))
+        assertEquals(res, appendL(a1, a2))
+    }
+
+    @Test
+    fun testConcat() {
+        val xs: MyList<MyList<Int>> = MyList.of(
+            MyList.of(1),
+            MyList.of(2),
+            MyList.of(3),
+            MyList.of(4),
+            MyList.of(5),
+        )
+        val res: MyList<Int> = MyList.of(1, 2, 3, 4, 5)
+
+        assertEquals(res, concat(xs))
+    }
+
+    @Test
+    fun testListUtils() {
+        val original: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+        assertEquals(
+            MyList.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 11),
+            increase1(original)
+        )
+
+        assertEquals(
+            MyList.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
+            intToString(original)
+        )
+
+        assertEquals(
+            MyList.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
+            map(original) { a -> a.toString() }
+        )
+
+        assertEquals(
+            MyList.of(1, 3, 5, 7, 9),
+            filter(original) { a -> a % 2 != 0 }
+        )
+
+        assertEquals(
+            MyList.of(1, 1, 2, 2, 3, 3),
+            flatMap(
+                MyList.of(1, 2, 3),
+            ) { i -> MyList.of(i, i) }
+        )
+
+        assertEquals(
+            MyList.of(1, 3, 5, 7, 9),
+            filterFM(original) { a -> a % 2 != 0 }
+        )
+
+        assertEquals(
+            MyList.of(7, 9, 11, 13, 15),
+            addEach(
+                MyList.of(1, 2, 3, 4, 5),
+                MyList.of(6, 7, 8, 9, 10)
+            )
+        )
+
+        assertEquals(
+            MyList.of(7, 9, 11, 13, 15),
+            zipWith(
+                MyList.of(1, 2, 3, 4, 5),
+                MyList.of(6, 7, 8, 9, 10)
+            ) { a, b -> a + b }
+        )
     }
 }

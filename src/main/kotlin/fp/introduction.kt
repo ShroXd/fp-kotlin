@@ -112,6 +112,8 @@ sealed class MyList<out T> {
             return if (aa.isEmpty()) Nil else Cons(aa[0], of(*tail))
         }
 
+        fun <T> empty(): MyList<T> = Nil
+
         fun sum(ints: MyList<Int>): Int =
             when (ints) {
                 is Nil -> 0
@@ -189,6 +191,8 @@ fun <T> init(l: MyList<T>): MyList<T> =
 //      f(xs.tail.head,
 //          f(xs.tail.tail.head, z)
 // )
+// ------------------------------------------------------------------
+// merge from right, z always is the original z
 fun <A, B> foldRight(xs: MyList<A>, z: B, f: (A, B) -> B): B =
     when (xs) {
         is Nil -> z
@@ -210,11 +214,14 @@ fun <T> length(xs: MyList<T>): Int =
 // ------------------------------------------------------------------
 // Suppose xs.tail.tail.tail == Nil
 // f(f(f(z, xs.head), xs.tail.head), xs.tail.tail.head)
+// ------------------------------------------------------------------
+// merge from left, z will be replaced every time
 tailrec fun <A, B> foldLeft(xs: MyList<A>, z: B, f: (B, A) -> B): B =
     when (xs) {
         is Nil -> z
         is Cons -> foldLeft(xs.tail, f(z, xs.head), f)
     }
+
 fun sumLeft(ints: MyList<Int>): Int =
     foldLeft(ints, 0) { a, b -> a + b }
 fun productLeft(dbs: MyList<Double>): Double =
@@ -226,41 +233,130 @@ fun <T> reverse(xs: MyList<T>): MyList<T> =
 
 // ------------------------------------------------------------------
 
-fun <A, B> foldRightL(xs: MyList<A>, z: B, f: (A, B) -> B): B =
-    foldLeft(xs, z) { a, b -> f(b, a) }
+fun <A, B> foldRightLM(xs: MyList<A>, z: B, f: (A, B) -> B): B =
+    foldLeft(xs, z) { b, a -> f(a, b) }
 
 fun sumLeftOL(ints: MyList<Int>): Int =
-    foldRightL(ints, 0) { a, b -> a + b }
+    foldRightLM(ints, 0) { a, b -> a + b }
 fun productLeftOL(dbs: MyList<Double>): Double =
-    foldRightL(dbs, 1.0) { a, b -> a * b }
+    foldRightLM(dbs, 1.0) { a, b -> a * b }
 fun <T> lengthLeftOL(xs: MyList<T>): Int =
-    foldRightL(xs, 0) { _, b -> 1 + b }
+    foldRightLM(xs, 0) { _, b -> 1 + b }
 fun <T> reverseOL(xs: MyList<T>): MyList<T> =
-    foldRightL(xs, Nil) { h: T, t: MyList<T> -> Cons(h, t) }
+    foldRightLM(xs, Nil) { h: T, t: MyList<T> -> Cons(h, t) }
 
 // ------------------------------------------------------------------
 
-fun <A, B> foldLeftR(xs: MyList<A>, z: B, f: (B, A) -> B): B =
+fun <A, B> foldLeftRM(xs: MyList<A>, z: B, f: (B, A) -> B): B =
     foldRight(xs, z) { a, b -> f(b, a) }
 
 fun sumLeftOR(ints: MyList<Int>): Int =
-    foldLeftR(ints, 0) { a, b -> a + b }
+    foldLeftRM(ints, 0) { a, b -> a + b }
 fun productLeftOR(dbs: MyList<Double>): Double =
-    foldLeftR(dbs, 1.0) { a, b -> a * b }
+    foldLeftRM(dbs, 1.0) { a, b -> a * b }
 fun <T> lengthLeftOR(xs: MyList<T>): Int =
-    foldLeftR(xs, 0) { a, _ -> 1 + a }
+    foldLeftRM(xs, 0) { a, _ -> 1 + a }
 fun <T> reverseOR(xs: MyList<T>): MyList<T> =
-    foldLeftR(xs, Nil as MyList<T>) { h, t -> Cons(t, h) }
+    foldLeftRM(xs, Nil as MyList<T>) { h, t -> Cons(t, h) }
 
-fun validator(s: String): Boolean {
-    if (s.length != 4) return false
+// ------------------------------------------------------------------
 
-    tailrec fun loop(n: Int): Boolean =
-        when {
-            n >= s.length -> true
-            s[n] in '0'..'9' -> loop(n + 1)
-            else -> false
+
+// ------------------------------------------------------------------
+// Suppose xs.tail.tail.tail == Nil
+// f(xs.head,
+//      f(xs.tail.head,
+//          f(xs.tail.tail.head, { b: B -> b })
+// )(z)
+// ------------------------------------------------------------------
+// f(xs.head,
+//      f(xs.tail.head,
+//          { b ->
+//              f(b, xs.tail.tail.head)
+// )(z)
+// ------------------------------------------------------------------
+// b will be z
+// trigger entire process
+fun <A, B> foldLeftR(xs: MyList<A>, z: B, f: (B, A) -> B): B =
+    // B equals to (B) -> B
+    // Thus, f: (A, B) -> B will be (A, (B) -> B) -> ((B) -> B)
+    foldRight<A, (B) -> B>(
+        xs,
+        { b: B -> b },
+        { a, g ->
+            { b ->
+                g(f(b, a))
+            }
         }
+    )(z)
 
-    return loop(0)
-}
+// ------------------------------------------------------------------
+// foldLeft(xs.tail, f(z, xs.head), f)(z)
+// ------------------------------------------------------------------
+// foldLeft(xs.tail, { b -> f(xs.head, b) }, f)(z)
+// foldLeft(xs.tail, f(xs,head, z), f)
+// ------------------------------------------------------------------
+// foldLeft(xs.tail.tail, f(xs,head.head, f(xs.head, z)), f)
+fun <A, B> foldRightL(xs: MyList<A>, z: B, f: (A, B) -> B): B =
+    foldLeft<A, (B) -> B>(
+        xs,
+        { b: B -> b },
+        { g, a ->
+            { b ->
+                g(f(a, b))
+            }
+        }
+    )(z)
+
+// ------------------------------------------------------------------
+
+fun <T> appendR(a1: MyList<T>, a2: MyList<T>): MyList<T> =
+    foldRight(a1, a2)  { a, b -> Cons(a, b) }
+// WTF I WROTE?
+fun <T> appendL(a1: MyList<T>, a2: MyList<T>): MyList<T> =
+    foldLeft(a1, { b: MyList<T> -> b }) { g, a -> { b -> g(Cons(a, b)) } }(a2)
+
+// ------------------------------------------------------------------
+
+fun <T> concat(xxs: MyList<MyList<T>>): MyList<T> =
+    foldRight(xxs, Nil as MyList<T>) { xs1, xs2 -> appendR(xs1, xs2) }
+
+// ------------------------------------------------------------------
+
+fun increase1(l: MyList<Int>): MyList<Int> =
+    foldRightL(l, MyList.empty()) { a, b -> Cons(a + 1, b) }
+
+fun intToString(l: MyList<Int>): MyList<String> =
+    foldRightL(l, MyList.empty()) { a, b -> Cons(a.toString(), b) }
+
+fun <A, B> map(xs: MyList<A>, f: (A) -> B): MyList<B> =
+    foldRightL(xs, MyList.empty()) { a, b -> Cons(f(a), b) }
+
+fun <T> filter(xs: MyList<T>, f: (T) -> Boolean): MyList<T> =
+    foldRightL(xs, MyList.empty()) { a, b -> if(f(a)) Cons(a, b) else b }
+
+fun <A, B> flatMap(xa: MyList<A>, f: (A) -> MyList<B>): MyList<B> =
+    foldRightL(xa, MyList.empty()) { a, b -> append(f(a), b) }
+
+fun <T> filterFM(xs: MyList<T>, f: (T) -> Boolean): MyList<T> =
+    flatMap(xs) {
+        if (f(it)) MyList.of(it) else MyList.empty()
+    }
+
+fun addEach(a1: MyList<Int>, a2: MyList<Int>): MyList<Int> =
+    when (a1) {
+        is Nil -> Nil
+        is Cons -> when (a2) {
+            is Nil -> Nil
+            is Cons -> Cons(a1.head + a2.head, addEach(a1.tail, a2.tail))
+        }
+    }
+
+fun <T> zipWith(a1: MyList<T>, a2: MyList<T>, f: (T, T) -> T): MyList<T> =
+    when (a1) {
+        is Nil -> Nil
+        is Cons -> when (a2) {
+            is Nil -> Nil
+            is Cons -> Cons(f(a1.head, a2.head), zipWith(a1.tail, a2.tail, f))
+        }
+    }
