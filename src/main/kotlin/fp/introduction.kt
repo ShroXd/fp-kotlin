@@ -360,3 +360,83 @@ fun <T> zipWith(a1: MyList<T>, a2: MyList<T>, f: (T, T) -> T): MyList<T> =
             is Cons -> Cons(f(a1.head, a2.head), zipWith(a1.tail, a2.tail, f))
         }
     }
+
+// ------------------------------------------------------------------
+
+tailrec fun <T> startWith(a1: MyList<T>, a2: MyList<T>): Boolean =
+    when (a1) {
+        is Nil -> a2 == Nil
+        is Cons -> when (a2) {
+            is Nil -> true
+            is Cons ->
+                if (a1.head == a2.head) startWith(a1.tail, a2.tail)
+                else false
+        }
+    }
+
+tailrec fun <T> hasSubsequence(xs: MyList<T>, sub: MyList<T>): Boolean =
+    when (xs) {
+        is Nil -> false
+        is Cons ->
+            if (startWith(xs, sub)) true
+            else hasSubsequence(xs.tail, sub)
+    }
+
+// ------------------------------------------------------------------
+// ----------tree----------------------------------------------------
+
+sealed class Tree<out A>
+data class Leaf<A>(val value: A): Tree<A>()
+data class Branch<A>(val left: Tree<A>, val right: Tree<A>): Tree<A>()
+
+fun <A> size(t: Tree<A>): Int =
+    when (t) {
+        is Leaf -> 1
+        is Branch -> 1 + size(t.left) + size(t.right)
+    }
+
+fun <A: Comparable<A>> max(t: Tree<A>): A =
+    when (t) {
+        is Leaf -> t.value
+        is Branch -> maxOf(max(t.left), max(t.right))
+    }
+
+fun <A> depth(t: Tree<A>): Int =
+    when (t) {
+        is Leaf -> 0
+        is Branch -> 1 + maxOf(depth(t.left), depth(t.right))
+    }
+
+fun <A, B> map(t: Tree<A>, f: (A) -> B): Tree<B> =
+    when (t) {
+        is Leaf -> Leaf(f(t.value))
+        is Branch -> Branch(
+            map(t.left, f),
+            map(t.right, f),
+        )
+    }
+
+// ? seems like fold is a common thing
+fun <A, B> fold(t: Tree<A>, l: (A) -> B, b: (B, B) -> B): B =
+    when (t) {
+        is Leaf -> l(t.value)
+        is Branch -> b(
+            fold(t.left, l, b),
+            fold(t.right, l, b)
+        )
+    }
+
+fun <A> sizeF(t: Tree<A>): Int =
+    fold(t, { 1 }) { b1, b2 -> 1 + b1 + b2 }
+
+fun maxF(t: Tree<Int>): Int =
+    fold(t, { a -> a }) { b1, b2 -> maxOf(b1, b2) }
+
+fun <A> depthF(t: Tree<A>): Int =
+    fold(t, { 0 }) { b1, b2 -> 1 + maxOf(b1, b2) }
+
+fun <A, B> mapF(t: Tree<A>, f: (A) -> B): Tree<B> =
+    fold(t, { a: A -> Leaf(f(a)) }) { b1: Tree<B>, b2: Tree<B> ->
+        Branch(b1, b2)
+    }
+

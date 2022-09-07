@@ -232,4 +232,58 @@ class IntroductionTest {
             ) { a, b -> a + b }
         )
     }
+
+    @Test
+    fun testHasSubsequence() {
+        val xs: MyList<Int> = MyList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val sub: MyList<Int> = MyList.of(4, 5, 6, 7)
+
+        assertEquals(true, hasSubsequence(xs, sub))
+    }
+
+    @Test
+    fun testTree() {
+        val tree: Tree<Int> = Branch(
+            Branch(
+                Branch(Leaf(10), Leaf(2)),
+                Branch(Leaf(1), Leaf(4)),
+            ),
+            Branch(
+                Branch(Leaf(5), Leaf(7)),
+                Branch(Leaf(3), Leaf(9)),
+            ),
+        )
+
+        assertEquals(15, size(tree))
+        assertEquals(10, max(tree))
+        assertEquals(3, depth(tree))
+        assertEquals(
+            Branch(
+                Branch(
+                    Branch(Leaf(100), Leaf(20)),
+                    Branch(Leaf(10), Leaf(40)),
+                ),
+                Branch(
+                    Branch(Leaf(50), Leaf(70)),
+                    Branch(Leaf(30), Leaf(90)),
+                ),
+            ), map(tree) { it * 10 }
+        )
+
+        assertEquals(15, sizeF(tree))
+        assertEquals(10, maxF(tree))
+        assertEquals(3, depthF(tree))
+        assertEquals(
+            Branch(
+                Branch(
+                    Branch(Leaf(100), Leaf(20)),
+                    Branch(Leaf(10), Leaf(40)),
+                ),
+                Branch(
+                    Branch(Leaf(50), Leaf(70)),
+                    Branch(Leaf(30), Leaf(90)),
+                ),
+            ), mapF(tree) { it * 10 }
+        )
+    }
 }
